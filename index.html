@@ -9,64 +9,84 @@
 	<title>Validador jogos lotofácil</title>
 
 	<script type="text/javascript">
-		async function verificar() {
-			let sorteados = document.getElementById('sorteados').value
-			let jogados = document.getElementById('jogados').value
-			let acertos = Array()
-			let acertosLimpos = Array()
-			let sorteados_arr = Array()
-			let jogados_arr = Array()
-			let i = 0
-			let msg = 'Nenhuma quantidade de premio atingida'
+		function verificar() {
 
-			let total = sorteados.length;
+            let table = document.getElementById('corpo-tabela')
+            let linhas = table.rows
+            let sorteados = document.getElementById('sorteados').value
+            let sorteados_arr = Array()
+            let i = 0
+            let acertos = 0
+
+            let total = sorteados.length;
 			while (i < total) {
 				sorteados_arr.push(Number(sorteados[i] + sorteados[i+1]))
 				i = i+2
 			}
 
-			total = jogados.length;
-			i = 0;
+            for (let n = 1; n < linhas.length; n++) {
+                acertos = verificarPorLinha(sorteados_arr, linhas[n])
+
+                if (acertos > 10) {
+                    var msg = acertos + ' acertos!'
+                } else {
+                    var msg = 'Mínimo de acertos não atingido'
+                }
+
+                linhas[n].querySelector('.resultado').innerText = msg
+            }			
+		}
+
+        function criarLinha(element)
+        {
+            let t = document.getElementById('corpo-tabela')
+            let tr = element.closest('tr')
+            let c = tr.cloneNode(true);
+
+            t.appendChild(c);
+
+            renomearLinha(t, c)
+            limparLinha(c)
+        }
+
+        function renomearLinha(table, linha)
+        {
+            linha.getElementsByTagName('th')[0].innerText = 'Jogo #' + Number((table.rows.length)-1)
+        }
+
+        function limparLinha(linha)
+        {
+            linha.querySelector('.jogados').value = ''
+            linha.querySelector('.resultado').innerText = ''
+        }
+
+        function verificarPorLinha(n_sorteados, linha) 
+        {
+            let jogados_arr = Array()
+            let acertos = Array()
+            let acertosLimpos = Array()
+            let jogados = linha.querySelector('.jogados').value.replace(/\s/g, '')
+            let i = 0
+
+            total = jogados.length
 			while (i < total) {
 				jogados_arr.push(Number(jogados[i] + jogados[i+1]))
 				i = i+2
 			}
+    
+			for (let v of n_sorteados) {
+                acertos.push(
+                    jogados_arr.find((element) => element == v)
+                )
+            }
 
-			function validarJogos(sorteados_arr, jogados_arr)
-			{
-				for (let v of sorteados_arr) {
-					acertos.push(
-						jogados_arr.find((element) => element == v)
-					)
-				}
-			}
-
-			validarJogos(sorteados_arr, jogados_arr)
-	
-			acertosLimpos = acertos.filter(function( element ) {
+            acertosLimpos = acertos.filter(function( element ) {
 			   return element !== undefined;
 			});
 
-			switch (acertosLimpos.length) {
-				case 11:
-					msg = '11 Acertos!'
-					break
-				case 12:
-					msg = '12 Acertos!'
-					break
-				case 13:
-				 	msg = '13 Acertos!'
-				 	break
-				case 14:
-				 	msg = '14 Acertos!'
-				 	break
-				case 15:
-				 	msg = '15 Acertos!'
-				 	break
-			}
+            return acertosLimpos.length
+        }
 
-			document.getElementById('resultado').innerText = msg
-		}
 	</script>
 </head>
 <body>
@@ -79,7 +99,7 @@
 		      <th scope="col">Resultado</th>
 		    </tr>
 		  </thead>
-		  <tbody>
+		  <tbody id="corpo-tabela">
 		    <tr>
 		      <th>Números sorteados</th>
 		      <td>
@@ -88,19 +108,16 @@
 		      <td></td>
 		    </tr>
 		    <tr>
-		      <th scope="row">Números jogados</th>
+		      <th>Jogo #1</th>
 		      <td>
-		      	<input type="text" id="jogados">
+		      	<input type="text" class="jogados">
+                <button type="button" onclick="criarLinha(this)">Mais</button>
 		      </td>
-		      <td></td>
+		      <td class="resultado"></td>
 		    </tr>
 		  </tbody>
 		</table>
-	
 		<button type="button" onclick="verificar()">Verificar</button>
-
-		<div id="resultado"></div>
 	</div>
-
 </body>
 </html>

@@ -10,15 +10,37 @@
 
 	<script type="text/javascript">
 		function verificar() {
+            const lotofacil = 30
+            const megasena = 12
+            const jogo_jogado = document.getElementById('idJogoJogado').value
+            const sorteados = document.getElementById('sorteados').value
+            const n_sorteados = sorteados.length
+
+            if ((jogo_jogado == 'Selecione um jogo' || jogo_jogado == '') && n_sorteados != megasena && n_sorteados != lotofacil) {
+                alert('Por favor, selecione um jogo.')
+                return
+            }
+
+            class JogoValidar {
+                constructor (qtd_n_sorteados, qtd_min_vencer) {
+                    this.qtd_n_sorteados = qtd_n_sorteados
+                    this.qtd_min_vencer = qtd_min_vencer
+                }
+            }
+
+            if (jogo_jogado == 'lotofacil' || n_sorteados == lotofacil) {
+                var jogo_validar = new JogoValidar(lotofacil, 11)
+            } else {
+                var jogo_validar = new JogoValidar(megasena, 4)
+            }
 
             let table = document.getElementById('corpo-tabela')
             let linhas = table.rows
-            let sorteados = document.getElementById('sorteados').value
             let sorteados_arr = Array()
             let i = 0
             let acertos = 0
-
             let total = sorteados.length;
+
 			while (i < total) {
 				sorteados_arr.push(Number(sorteados[i] + sorteados[i+1]))
 				i = i+2
@@ -27,7 +49,7 @@
             for (let n = 1; n < linhas.length; n++) {
                 acertos = verificarPorLinha(sorteados_arr, linhas[n])
 
-                if (acertos > 10) {
+                if (acertos >= jogo_validar.qtd_min_vencer) {
                     var msg = acertos + ' acertos!'
                 } else {
                     var msg = 'Mínimo de acertos não atingido'
@@ -36,6 +58,24 @@
                 linhas[n].querySelector('.resultado').innerText = msg
             }			
 		}
+
+        function verificarPorLinha(n_sorteados, linha) {
+            let jogados = linha.querySelector('.jogados').value.replace(/\s/g, '');
+            
+            let arr_jogados = [];
+            for (let i = 0; i < jogados.length; i += 2) {
+                let numero = parseInt(jogados.substr(i, 2), 10);
+                if (!isNaN(numero)) {
+                    arr_jogados.push(numero);
+                }
+            }
+
+            let acertos = n_sorteados.filter(numero => 
+                arr_jogados.includes(numero)
+            );
+
+            return acertos.length;
+        }
 
         function criarLinha(element)
         {
@@ -59,49 +99,34 @@
             linha.querySelector('.jogados').value = ''
             linha.querySelector('.resultado').innerText = ''
         }
-
-        function verificarPorLinha(n_sorteados, linha) 
-        {
-            let jogados_arr = Array()
-            let acertos = Array()
-            let acertosLimpos = Array()
-            let jogados = linha.querySelector('.jogados').value.replace(/\s/g, '')
-            let i = 0
-
-            total = jogados.length
-			while (i < total) {
-				jogados_arr.push(Number(jogados[i] + jogados[i+1]))
-				i = i+2
-			}
-    
-			for (let v of n_sorteados) {
-                acertos.push(
-                    jogados_arr.find((element) => element == v)
-                )
-            }
-
-            acertosLimpos = acertos.filter(function( element ) {
-			   return element !== undefined;
-			});
-
-            return acertosLimpos.length
-        }
-
 	</script>
 </head>
 <body>
 	<div class="container">
+        <div class="card mt-4">
+            <div class="card-body p-1">
+                <div class="row">
+                    <div class="col-12">
+                        <select class="form-select" id="idJogoJogado">
+                            <option selected disabled>Selecione um jogo</option>
+                            <option value="lotofacil">Lotofácil</option>
+                            <option value="megasena">Mega-Sena</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
 	  	<table class="table">
 		  <thead>
 		    <tr>
 		      <th scope="col"></th>
 		      <th scope="col">Números</th>
-		      <th scope="col">Resultado</th>
+		      <th scope="col" style="width: 600px;">Resultado</th>
 		    </tr>
 		  </thead>
 		  <tbody id="corpo-tabela">
 		    <tr>
-		      <th>Números sorteados</th>
+		      <th>Sorteados</th>
 		      <td>
 		      	<input type="text" id="sorteados">
 		      </td>
